@@ -61,7 +61,7 @@ resource "aws_route_table_association" "myapp-default-rtb-association" {
 resource "aws_default_security_group" "default-sg" {
   vpc_id = aws_vpc.myapp-vpc.id
 
-  
+
   ingress {
     from_port = 22
     to_port = 22
@@ -86,6 +86,26 @@ resource "aws_default_security_group" "default-sg" {
 
   tags = {
     Name: "${var.env_zone}-sg"
+  }
+}
+
+data "aws_ami" "latest_amazon_linux" {
+  most_recent = true
+  owners = ["amazon"]
+
+  filter {
+    name = "name"
+    values = ["al2023-ami-ecs-hvm-*-kernel-*-x86_64"]
+  }
+}
+
+resource "aws_instance" "myapp-instance" {
+  ami = data.aws_ami.latest_amazon_linux.id
+  instance_type = "t2.micro"
+  subnet_id = aws_subnet.myapp-subnet-1.id
+  vpc_security_group_ids = [aws_default_security_group.default-sg.id]
+  tags = {
+    Name: "${var.env_zone}-instance"
   }
 }
 
