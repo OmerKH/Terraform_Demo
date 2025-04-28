@@ -7,6 +7,7 @@ variable subnet_cidr_block {}
 variable env_zone {}
 variable avail_zone{}
 variable my_ip {}
+variable public_key_path {}
 
 # variable cidr_blocks {
 #   description = "cidr blocks for vpc and subnets"
@@ -99,11 +100,19 @@ data "aws_ami" "latest_amazon_linux" {
   }
 }
 
+resource "aws_key_pair" "ssh-key" {
+  key_name = "server-key"
+  public_key = file(var.public_key_path)
+}
+
 resource "aws_instance" "myapp-instance" {
   ami = data.aws_ami.latest_amazon_linux.id
   instance_type = "t2.micro"
   subnet_id = aws_subnet.myapp-subnet-1.id
   vpc_security_group_ids = [aws_default_security_group.default-sg.id]
+  availability_zone = var.avail_zone
+  associate_public_ip_address = true
+  key_name = aws_key_pair.ssh-key.key_name
   tags = {
     Name: "${var.env_zone}-instance"
   }
