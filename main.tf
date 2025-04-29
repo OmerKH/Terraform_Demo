@@ -8,6 +8,7 @@ variable env_zone {}
 variable avail_zone{}
 variable my_ip {}
 variable public_key_path {}
+variable private_key_path {}
 
 # variable cidr_blocks {
 #   description = "cidr blocks for vpc and subnets"
@@ -114,9 +115,52 @@ resource "aws_instance" "myapp-instance" {
   associate_public_ip_address = true
   key_name = aws_key_pair.ssh-key.key_name
 
-  user_data = file("entry-script.sh")
+  # user_data = file("entry-script.sh")
 
-user_data_replace_on_change = true
+  user_data_replace_on_change = true
+
+
+
+
+  
+###############################################################
+##IT IS NOT RECOMMENDED TO USE provisioners IN PRODUCTION######
+  # provisioners are used to execute scripts on the instance after it is created
+  # they are not recommended for production use, but can be useful for testing and development
+  # in production, use a configuration management tool like Ansible, Chef, or Puppet instead
+  # The connection block is used to specify how to connect to the instance
+###############################################################
+
+  connection {
+    type = "ssh"
+    host = self.public_ip
+    user = "ec2-user"
+    private_key = file(var.private_key_path)
+  }
+
+  provisioner "file" {
+    source = "entry-script.sh"
+    destination = "/tmp/entry-script.sh"
+  }
+
+  # provisioner "remote-exec" {
+  #   inline = [
+  #     "/tmp/entry-script.sh",
+  #     "echo ${aws_instance.myapp-instance.public_ip} > /tmp/ip.txt"
+  #   ]
+
+  # }
+
+    provisioner "remote-exec" {
+    ### A better way to run the script is to use the `script` argument instead of `inline`.
+    script = "/tmp/entry-script.sh"
+  }
+
+  provisioner "local-exec" {
+    command = "echo ${self.public_ip} > ip.txt"
+  }
+
+
   tags = {
     Name: "${var.env_zone}-instance"
   }
