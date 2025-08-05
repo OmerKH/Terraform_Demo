@@ -1,9 +1,14 @@
-# local .terraform dir
-.terraform/*
-
-# tf state files
+# Terraform
+**/.terraform/*
+**/.terraform.lock.hcl
 *.tfstate
 *.tfstate.*
-
-# tf variable files, may include sensitive data
 *.tfvars
+*.tfvars.json
+terraform.tfplan
+terraform.tfplan.*
+*.backup
+*.log
+*.crash
+
+# Terraform provider binaries

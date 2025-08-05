@@ -101,7 +101,7 @@ data "aws_ami" "latest_amazon_linux" {
 }
 
 resource "aws_key_pair" "ssh-key" {
-  key_name = "server-key"
+  key_name = "ansible"
   public_key = file(var.public_key_path)
 }
 
